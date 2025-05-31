@@ -3,6 +3,13 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
 const jwt =require('jsonwebtoken');
+const dotenv = require('dotenv');
+dotenv.config();
+
+// Middleware to check if the user is authenticated
+
+// const authenticate = (req, res, next) => {
+//     const token = req.headers['authorization'];
 
 const generateToken = (user) => {
 
@@ -20,18 +27,21 @@ router.post('/login', async (req, res) => {
     if (!email || !password) {
         return res.status(400).json({ message: 'Invalid credentials' });
     }
-    const user = await User.findOne({ email: email })
-     if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-    // Here you would typically check the user credentials against the database
-    if (password !== user.password) {
-        return res.status(401).json({ message: 'Invalid email or password' });
+
+    const user = await User.findOne({ email });
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
     }
-    // Generate a token for the user
+
+   if (password !== user.password) {
+  return res.status(401).json({ message: 'Invalid email or password' });
+}
+
+   
+
     const token = generateToken(user);
 
-    res.status(200).json({ message: 'Login successful', email, password }, { token });
+    res.status(200).json({ message: 'Login successful', email, token });
 });
 
 router.post('/register', async (req, res) => {
